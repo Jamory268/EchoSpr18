@@ -8,6 +8,7 @@ import core.Vendor;
 import dao.VendorDAO;
 import dao.DBConnection;
 import java.util.List;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Holden.Hall
@@ -22,6 +23,15 @@ public class VendorFrame extends javax.swing.JFrame {
         initComponents();
         this.conn = myConn;
         vendorDAO = new VendorDAO(this.conn);
+        name_Label.setText("Name:");
+        contact_Label.setText("Contact:");
+        city_Label.setText("City:");
+        state_Label.setText("State:");
+        address_Label.setText("Address:");
+        zip_Label.setText("Zip:");
+       
+        VendorTable.setAutoCreateRowSorter(true);
+
         try{
             //Get a connection to the DB
             
@@ -64,7 +74,7 @@ public class VendorFrame extends javax.swing.JFrame {
         city_TextField = new javax.swing.JTextField();
         state_TextField = new javax.swing.JTextField();
         zip_TextField = new javax.swing.JTextField();
-        Create_Button = new javax.swing.JButton();
+        Add_Button = new javax.swing.JButton();
         Update_Button = new javax.swing.JButton();
         Delete_Button = new javax.swing.JButton();
         Reset_Button = new javax.swing.JButton();
@@ -145,13 +155,33 @@ public class VendorFrame extends javax.swing.JFrame {
             }
         });
 
-        Create_Button.setText("Create");
+        Add_Button.setText("Add");
+        Add_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Add_ButtonActionPerformed(evt);
+            }
+        });
 
         Update_Button.setText("Update");
+        Update_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Update_ButtonActionPerformed(evt);
+            }
+        });
 
         Delete_Button.setText("Delete");
+        Delete_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Delete_ButtonActionPerformed(evt);
+            }
+        });
 
         Reset_Button.setText("Reset");
+        Reset_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Reset_ButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -162,7 +192,7 @@ public class VendorFrame extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 920, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Create_Button)
+                            .addComponent(Add_Button)
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -196,7 +226,7 @@ public class VendorFrame extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Create_Button)
+                    .addComponent(Add_Button)
                     .addComponent(Update_Button)
                     .addComponent(Delete_Button)
                     .addComponent(Reset_Button))
@@ -274,12 +304,118 @@ public class VendorFrame extends javax.swing.JFrame {
        zip_TextField.setText(model.getValueAt(selectedRowModel, 6).toString());
        
        //disable create button
-       Create_Button.setEnabled(false);
+       Add_Button.setEnabled(false);
     }//GEN-LAST:event_VendorTableMouseClicked
 
     private void address_TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_address_TextFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_address_TextFieldActionPerformed
+
+    private void Add_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Add_ButtonActionPerformed
+        String VID, name, contact, address, city, state, zip;
+        VID = VID_TextField.getText();
+        name = name_TextField.getText();
+        contact = contact_TextField.getText();
+        address = address_TextField.getText();
+        city = city_TextField.getText();
+        state = state_TextField.getText();
+        zip = zip_TextField.getText();
+        
+        Vendor newVendor = new Vendor(VID, name, contact, address, city, state, zip);
+        
+        try{
+            vendorDAO.addVendor(newVendor);
+            //refresh table after adding new tuple
+            vendorList = vendorDAO.getAllVendors();
+        }
+        catch(Exception exc){
+           JOptionPane.showMessageDialog(this, "There was an error adding this vendor please make sure you're entered information is matching"
+                   + "                   this example:\n VID: X2Z3 (must be diffrent for each vendor) \n Name: Store Name \n contact: xxx-xxx-xxxx \n address: 123 Example St \n city: Wichita Falls \n state: TX \n zip: 76301");
+        }
+        
+        model = new VendorTableModel(vendorList);
+        VendorTable.setModel(model);
+        
+        VID_TextField.setText("");
+        name_TextField.setText("");
+        contact_TextField.setText("");
+        address_TextField.setText("");
+        city_TextField.setText("");
+        state_TextField.setText("");
+        zip_TextField.setText("");        
+    }//GEN-LAST:event_Add_ButtonActionPerformed
+
+    private void Reset_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Reset_ButtonActionPerformed
+       VID_TextField.setText("");
+       name_TextField.setText("");
+       contact_TextField.setText("");
+       address_TextField.setText("");
+       city_TextField.setText("");
+       state_TextField.setText("");
+       zip_TextField.setText("");
+       Add_Button.setEnabled(true);
+
+    }//GEN-LAST:event_Reset_ButtonActionPerformed
+
+    private void Delete_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Delete_ButtonActionPerformed
+        String VID, name, contact, address, city, state, zip;
+        VID = VID_TextField.getText();
+        name = name_TextField.getText();
+        contact = contact_TextField.getText();
+        address = address_TextField.getText();
+        city = city_TextField.getText();
+        state = state_TextField.getText();
+        zip = zip_TextField.getText();
+        
+        Vendor oldVendor = new Vendor(VID, name, contact, address, city, state, zip);
+        
+        try{
+            vendorDAO.deleteVendor(oldVendor);
+            //refresh table after adding new tuple
+            vendorList = vendorDAO.getAllVendors();
+        }
+        catch(Exception exc){
+            JOptionPane.showMessageDialog(this, "Error: there was a problem deleting this vendor");
+        }  
+        
+        model = new VendorTableModel(vendorList);
+        VendorTable.setModel(model);
+        Add_Button.setEnabled(true);
+
+        VID_TextField.setText("");
+        name_TextField.setText("");
+        contact_TextField.setText("");
+        address_TextField.setText("");
+        city_TextField.setText("");
+        state_TextField.setText("");
+        zip_TextField.setText("");
+    }//GEN-LAST:event_Delete_ButtonActionPerformed
+
+    private void Update_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Update_ButtonActionPerformed
+        String VID, name, contact, address, city, state, zip;
+        VID = VID_TextField.getText();
+        name = name_TextField.getText();
+        contact = contact_TextField.getText();
+        address = address_TextField.getText();
+        city = city_TextField.getText();
+        state = state_TextField.getText();
+        zip = zip_TextField.getText();
+        
+        Vendor changedVendor = new Vendor(VID, name, contact, address, city, state, zip);
+        
+        try{
+            vendorDAO.updateVendor(changedVendor);
+            //refresh table after adding new tuple
+            vendorList = vendorDAO.getAllVendors();
+        }
+        catch(Exception exc){
+             JOptionPane.showMessageDialog(this, "There was an error updating this vendor please make sure you're entered information is matching this example:"
+                     + "\n 105 (must be diffrent for each vendor) \n Store Name \n xxx-xxx-xxxx \n 123 Example St \n Wichita Falls \n TX\n 76301");
+        }
+        
+        model = new VendorTableModel(vendorList);
+        VendorTable.setModel(model);
+    }//GEN-LAST:event_Update_ButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -317,7 +453,7 @@ public class VendorFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Create_Button;
+    private javax.swing.JButton Add_Button;
     private javax.swing.JButton Delete_Button;
     private javax.swing.JButton Reset_Button;
     private javax.swing.JButton Update_Button;

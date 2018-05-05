@@ -79,4 +79,5 @@ public class FixesDAO {
             conn.close(stmt, null);
         }
     }
+    
 }

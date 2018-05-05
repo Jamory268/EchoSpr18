@@ -7,13 +7,26 @@ package gui;
 
 import java.util.List;
 import core.RepairOrder;
+import core.Carrier;
+import core.Employee;
 import dao.RepairOrderDAO;
+import dao.EmployeeDAO;
 import dao.DBConnection;
+import dao.CarrierDAO;
 
 // **** //
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.sql.ResultSet;
+
+//Clorissa Callender
+   
+import java.text.SimpleDateFormat;
+import java.util.Date;
 // **** //
 
 /**
@@ -23,33 +36,70 @@ import javax.swing.JOptionPane;
 public class RepairOrderFrame extends javax.swing.JFrame {
     private DBConnection conn;
     private RepairOrderDAO RODAO;
+    private EmployeeDAO EDAO;
+    private CarrierDAO CDAO;
     private List<RepairOrder> repairOrders;
+    private List EIDList;
+    private List CIDList;
+    private List shipTypeList;
     RepairOrderTableModel model;
+    //Clorissa Callender
+    
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+    Date date = new Date();
     /**
      * Creates new form RepairOrderFrame
      */
     public RepairOrderFrame(DBConnection myConn) {
         initComponents();
-        
+
         conn = myConn;
         RODAO = new RepairOrderDAO(conn);
+        EDAO = new EmployeeDAO(conn);
+        CDAO = new CarrierDAO(conn);
+
+        dateRecdTextField.setText(formatter.format(date));
+
         // enable column sorting on any attribute in the table
         // follows from https://github.com/LegendaryZReborn/4123-DatabaseManagement/blob/master/Donation%20Tracker/src/gui/FundFrame.java
         TableRepairOrders.setAutoCreateRowSorter(true);
         try {
             repairOrders = RODAO.getAllRepairOrders();
-            model = new RepairOrderTableModel(repairOrders);
-            TableRepairOrders.setModel(model);
+
         }
         catch(Exception ex) {
             Logger.getLogger(RepairOrderFrame.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(this, "Error 2: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error setting up table connection: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
         }
-//        catch(Exception ex) {
-//            Logger.getLogger(ContributionFrame.class.getName()).log(Level.SEVERE, null, ex);
-//            JOptionPane.showMessageDialog(this, "Error 2: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
-//        }
-        
+        model = new RepairOrderTableModel(repairOrders);
+        TableRepairOrders.setModel(model);
+        try {
+            shipTypeList = RODAO.getAllShipTypes();
+//            for(int i = 0; i < shipTypeList.size(); i++)
+//                shipTypeComboBox.addItem(shipTypeList.get(i).toString());
+        }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error setting up ship types: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        try {
+            CIDList = CDAO.getAllCIDs();
+            for(int i = 0; i < CIDList.size(); i++) {
+                shipIn_CIDComboBox.addItem(CIDList.get(i).toString());
+                shipOut_CIDComboBox.addItem(CIDList.get(i).toString());
+            }
+        }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error setting up shipping CIDs: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        try {
+            EIDList = EDAO.comboValues();
+            for(int i = 0; i < EIDList.size(); i++)
+                receivingEIDComboBox.addItem(EIDList.get(i).toString());
+        }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error setting up EIDs: " + ex, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
     }
 
     /**
@@ -84,7 +134,7 @@ public class RepairOrderFrame extends javax.swing.JFrame {
         RORemoveButton = new javax.swing.JButton();
         ROResetButton = new javax.swing.JButton();
         receivingEIDComboBox = new javax.swing.JComboBox<>();
-        CIDComboBox = new javax.swing.JComboBox<>();
+        shipIn_CIDComboBox = new javax.swing.JComboBox<>();
         shipOut_CIDComboBox = new javax.swing.JComboBox<>();
         shipTypeComboBox = new javax.swing.JComboBox<>();
         SN1ComboBox = new javax.swing.JComboBox<>();
@@ -99,6 +149,8 @@ public class RepairOrderFrame extends javax.swing.JFrame {
         SN2FormattedTextField = new javax.swing.JFormattedTextField();
         SN3FormattedTextField = new javax.swing.JFormattedTextField();
         SN4FormattedTextField = new javax.swing.JFormattedTextField();
+        RIDLabel = new javax.swing.JLabel();
+        RIDTextField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -111,7 +163,7 @@ public class RepairOrderFrame extends javax.swing.JFrame {
                 {null, null, null, null, null, null, null}
             },
             new String [] {
-                "RID", "dateRecd", "dateShipped", "shipOutType", "shipOut_CID", "EID", "shipIn_CID"
+                "Repair Order ID", "Date Received", "Date Shipped", "Carrier Delivery Type", "Outbound CID", "EID", "Inbound CID"
             }
         ) {
             Class[] types = new Class [] {
@@ -120,6 +172,11 @@ public class RepairOrderFrame extends javax.swing.JFrame {
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+        });
+        TableRepairOrders.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TableRepairOrdersMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(TableRepairOrders);
@@ -152,30 +209,50 @@ public class RepairOrderFrame extends javax.swing.JFrame {
 
         workingEID4Label.setText("EID 4 repairing:");
 
-        dateShippedTextField.setText("Date shipped*");
+        dateShippedTextField.setText("Date Repair Order Shipped");
         dateShippedTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dateShippedTextFieldActionPerformed(evt);
             }
         });
 
-        dateRecdTextField.setText("Date received*");
+        dateRecdTextField.setText("Date Repair Order Received");
 
         ROAddButton.setText("Add");
+        ROAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ROAddButtonMouseClicked(evt);
+            }
+        });
 
         ROUpdateButton.setText("Update");
+        ROUpdateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ROUpdateButtonActionPerformed(evt);
+            }
+        });
 
         RORemoveButton.setText("Remove");
+        RORemoveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RORemoveButtonActionPerformed(evt);
+            }
+        });
 
         ROResetButton.setText("Reset");
+        ROResetButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ROResetButtonMouseClicked(evt);
+            }
+        });
 
-        receivingEIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        receivingEIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "empty" }));
 
-        CIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        shipIn_CIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "empty" }));
 
-        shipOut_CIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        shipOut_CIDComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "empty" }));
 
-        shipTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        shipTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "empty", "Ground", "Blue", "Brown", "Red" }));
 
         SN1ComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -206,151 +283,152 @@ public class RepairOrderFrame extends javax.swing.JFrame {
             }
         });
 
+        RIDLabel.setText("RID:");
+
+        RIDTextField.setText("Order Repair ID");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 783, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 618, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(SerialNum3Label)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(workingEID3Label)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(SerialNum1Label)
-                                .addGap(18, 18, 18)
-                                .addComponent(ROAddButton)
-                                .addGap(275, 275, 275)
-                                .addComponent(workingEID4Label))
-                            .addComponent(workingEID2Label)
-                            .addComponent(workingEID1Label))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(419, 419, 419)
-                            .addComponent(SerialNum4Label)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(shipOut_CIDLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(receivingEIDLabel)
-                        .addGap(33, 33, 33)
-                        .addComponent(receivingEIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(SerialNum2Label)))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CIDLabel)
-                            .addComponent(shipOut_CIDLabel)
                             .addComponent(shipOutTypeLabel)
                             .addComponent(dateShippedLabel)
-                            .addComponent(dateRecdLabel))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(39, 39, 39)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(dateShippedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(RIDLabel)
+                            .addComponent(receivingEIDLabel)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createSequentialGroup()
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(shipOut_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(shipTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(dateRecdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(37, 37, 37)
-                                .addComponent(SN1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ROUpdateButton)
-                                    .addComponent(SN1FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(RORemoveButton)
-                                        .addGap(40, 40, 40)
-                                        .addComponent(ROResetButton))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(159, 159, 159)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(workEID3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(workEID4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(workEID2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(workEID1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(SN2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(SN3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(SN4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(46, 46, 46)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(SN4FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(SN3FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(SN2FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)))))
-                .addGap(695, 695, 695))
+                                        .addComponent(ROAddButton)
+                                        .addComponent(CIDLabel))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGap(39, 39, 39)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(dateRecdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(RIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(dateShippedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(shipTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(shipOut_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(receivingEIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(shipIn_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGap(78, 78, 78)
+                                            .addComponent(ROUpdateButton))))
+                                .addComponent(dateRecdLabel, javax.swing.GroupLayout.Alignment.LEADING)))
+                        .addGap(43, 43, 43)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(RORemoveButton)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(SerialNum1Label)
+                                .addComponent(SerialNum2Label)
+                                .addComponent(SerialNum3Label)
+                                .addComponent(SerialNum4Label))
+                            .addComponent(workingEID1Label)
+                            .addComponent(workingEID2Label)
+                            .addComponent(workingEID3Label)
+                            .addComponent(workingEID4Label))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(77, 77, 77)
+                        .addComponent(ROResetButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(40, 40, 40)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(workEID3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(workEID4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(workEID2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(workEID1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(49, 49, 49)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(SN1FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN2FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN3FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN4FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(RIDLabel)
+                    .addComponent(RIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(SerialNum1Label)
+                    .addComponent(SN1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(SN1FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(SerialNum2Label)
-                        .addComponent(receivingEIDLabel)
                         .addComponent(SN2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(SN2FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(receivingEIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(SerialNum2Label)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(dateRecdLabel)
+                        .addComponent(dateRecdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(CIDLabel)
-                    .addComponent(CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(SerialNum3Label)
+                    .addComponent(SN3FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(SN3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(SN3FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(shipOut_CIDLabel)
-                    .addComponent(shipOut_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(SerialNum4Label)
-                    .addComponent(SN4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(SN4FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(shipOutTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(shipTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(workingEID1Label)
-                    .addComponent(workEID1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dateShippedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dateShippedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(workingEID2Label)
-                    .addComponent(workEID2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dateRecdLabel)
-                    .addComponent(dateRecdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(workingEID3Label)
-                    .addComponent(workEID3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(dateShippedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(dateShippedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(SerialNum1Label)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(SN1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(SN1FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(workingEID4Label)
-                        .addComponent(workEID4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(SN4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(SN4FormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(SerialNum4Label)
+                                .addComponent(shipOutTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(shipOut_CIDLabel)
+                            .addComponent(shipOut_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(workingEID1Label)
+                            .addComponent(workEID1ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(receivingEIDLabel)
+                            .addComponent(receivingEIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(workingEID2Label)
+                            .addComponent(workEID2ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(shipTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ROAddButton)
-                    .addComponent(ROUpdateButton)
-                    .addComponent(RORemoveButton)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(shipIn_CIDComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(CIDLabel))
+                    .addComponent(workingEID3Label)
+                    .addComponent(workEID3ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(workingEID4Label)
+                    .addComponent(workEID4ComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ROAddButton)
+                        .addComponent(ROUpdateButton)
+                        .addComponent(RORemoveButton))
                     .addComponent(ROResetButton))
-                .addContainerGap(95, Short.MAX_VALUE))
+                .addContainerGap(112, Short.MAX_VALUE))
         );
 
         pack();
@@ -363,6 +441,237 @@ public class RepairOrderFrame extends javax.swing.JFrame {
     private void SN4FormattedTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SN4FormattedTextFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_SN4FormattedTextFieldActionPerformed
+    
+
+//////    shipTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "GG2220", "RE1410", "WG3100", "WG3720", "WR0103" }));
+
+    private void TableRepairOrdersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableRepairOrdersMouseClicked
+  //FIRST:event_TableRepairOrdersMouseClicked
+        // TODO add your handling code here:
+        int rowIndex = TableRepairOrders.getSelectedRow();
+        int rowModel = TableRepairOrders.convertRowIndexToModel(rowIndex);
+
+        RIDTextField.setText(TableRepairOrders.getValueAt(rowIndex, 0).toString());
+        dateRecdTextField.setText(TableRepairOrders.getValueAt(rowIndex, 1).toString());
+        dateShippedTextField.setText(TableRepairOrders.getValueAt(rowIndex, 2).toString());
+        shipTypeComboBox.setSelectedItem(TableRepairOrders.getValueAt(rowIndex, 3).toString());
+        if (TableRepairOrders.getValueAt(rowIndex, 4).equals(0)) {
+            shipOut_CIDComboBox.setSelectedItem("empty");
+        }
+        else {
+            shipOut_CIDComboBox.setSelectedItem(TableRepairOrders.getValueAt(rowIndex, 4).toString());
+        }
+        if (TableRepairOrders.getValueAt(rowIndex, 5).equals(0)) {
+            receivingEIDComboBox.setSelectedItem("empty");
+        }
+        else {
+            receivingEIDComboBox.setSelectedItem(TableRepairOrders.getValueAt(rowIndex, 5).toString());
+        }
+        if (TableRepairOrders.getValueAt(rowIndex, 6).equals(0)) {
+            shipIn_CIDComboBox.setSelectedItem("empty");
+        }
+        else {
+            shipIn_CIDComboBox.setSelectedItem(TableRepairOrders.getValueAt(rowIndex, 6).toString());
+        }
+    }//GEN-LAST:event_TableRepairOrdersMouseClicked
+
+    private void ROResetButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ROResetButtonMouseClicked
+        // TODO add your handling code here:
+        reset();
+        ROAddButton.setEnabled(true);
+    }//GEN-LAST:event_ROResetButtonMouseClicked
+
+    private void RORemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RORemoveButtonActionPerformed
+    
+      try{
+           RODAO.deleteRepairOrder(Integer.parseInt(RIDTextField.getText().toString()));
+           repairOrders = RODAO.getAllRepairOrders();
+           model = new RepairOrderTableModel(repairOrders);
+           TableRepairOrders.setModel(model);
+           JOptionPane.showMessageDialog(this,"Repair Order was deleted!");
+
+       }catch(Exception exc){
+           String error ="";
+           if(exc.getMessage().contains("for key 'PRIMARY'"))
+               error="Repair ID not found!\n";
+            System.out.println("A Problem occured while deleting a Repair Order: " + exc);
+            JOptionPane.showMessageDialog(this,"Repair Order was not deleted!"
+                                                +error);
+
+       }
+      
+        
+    }//GEN-LAST:event_RORemoveButtonActionPerformed
+ 
+    private void ROAddButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ROAddButtonMouseClicked
+        // TODO add your handling code here:
+        if(
+            receivingEIDComboBox.getSelectedItem().toString() == "empty" ||    
+            RIDTextField.getText().toString().isEmpty() ||
+            RIDTextField.getText().toString() == "Order Repair ID" ||
+            dateRecdTextField.getText().toString() == "Repair Order Received"||
+            dateRecdTextField.getText().toString().isEmpty()
+          )
+        {
+            JOptionPane.showMessageDialog(this,"Please Include all mandatory values\n"
+                                             + "Date Received\n"
+                                             + "RID\n"
+                                             + "EID Received by\n");
+        }
+        else{
+              //use regex to check for date format of two date fields
+              String dateRecdRegex = dateRecdTextField.getText().toString();
+              String dateShipRegex = "";
+              // Check dateRecdRegex for correct date format
+              if(!(dateRecdRegex.matches("\\d{4}-\\d{2}-\\d{2}")))
+              {
+                  JOptionPane.showMessageDialog(this,"Please enter dateRecieved in the format:"
+                                                    +"\n\"YYYY-MM-DD\"");
+                  return;
+              }
+              // Assign dateShipRegex if not null, then check value for date format
+              if(!(dateShippedTextField.getText().toString().isEmpty())){
+                   dateShipRegex = dateShippedTextField.getText().toString();
+                   if(!(dateShipRegex.matches("\\d{4}-\\d{2}-\\d{2}")) && 
+                        !(dateShipRegex == "")){
+                       JOptionPane.showMessageDialog(this,"Please enter dateShipped in the format:"
+                                                    +"\n\"YYYY-MM-DD\"");
+                            return;   
+                   }
+              }
+        
+        String temp = shipOut_CIDComboBox.getSelectedItem().toString();
+        int soid = 0;
+        if(temp != "empty")
+            soid = Integer.parseInt(shipOut_CIDComboBox.getSelectedItem().toString());   
+        int rid = Integer.parseInt(RIDTextField.getText().toString());
+        String dr = dateRecdTextField.getText().toString();
+        String ds = dateShippedTextField.getText().toString();
+        String temp2 = shipTypeComboBox.getSelectedItem().toString();
+        String stype = "";
+        if(temp2 != "empty")
+            stype = shipTypeComboBox.getSelectedItem().toString();
+        int eid = Integer.parseInt(receivingEIDComboBox.getSelectedItem().toString());
+        String temp3 = shipIn_CIDComboBox.getSelectedItem().toString();
+        int siid = 0;
+        if(temp3 != "empty")
+            siid = Integer.parseInt(shipIn_CIDComboBox.getSelectedItem().toString());
+        RepairOrder addOrder = new RepairOrder(rid, dr, ds, stype, soid, eid, siid);
+             
+        System.out.println(addOrder.getDateShipped());
+        System.out.println(addOrder.getShipOutType());
+        System.out.println(addOrder.getShipOut_CID());
+        System.out.println(addOrder.getEID());
+        System.out.println(addOrder.getShipIn_CID());
+        System.out.println(addOrder.getRID());
+
+       try{    
+           RODAO.addRepairOrder(addOrder);
+           repairOrders = RODAO.getAllRepairOrders();
+           model = new RepairOrderTableModel(repairOrders);
+           TableRepairOrders.setModel(model);
+           JOptionPane.showMessageDialog(this,"Repair Orderd added!");
+           reset();
+       }catch(Exception exc){
+            System.out.println("A Problem occured while adding a Repair Order: " + exc);
+            JOptionPane.showMessageDialog(this,"Repair Order was not added!");
+      
+    }//GEN-LAST:event_ROAddButtonMouseClicked
+    }
+    }
+    
+    private void ROUpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ROUpdateButtonActionPerformed
+        if(
+            receivingEIDComboBox.getSelectedItem().toString() == "empty" ||    
+            RIDTextField.getText().toString().isEmpty() ||
+            RIDTextField.getText().toString() == "Order Repair ID" ||
+            dateRecdTextField.getText().toString() == "Repair Order Received"||
+            dateRecdTextField.getText().toString().isEmpty()
+          )
+        {
+            JOptionPane.showMessageDialog(this,"Please Include all mandatory values\n"
+                                             + "Date Received\n"
+                                             + "RID\n"
+                                             + "EID Received by\n");
+        }
+         else{
+              //use regex to check for date format of two date fields
+              String dateRecdRegex = dateRecdTextField.getText().toString();
+              String dateShipRegex = "";
+              // Check dateRecdRegex for correct date format
+              if(!(dateRecdRegex.matches("\\d{4}-\\d{2}-\\d{2}")))
+              {
+                  JOptionPane.showMessageDialog(this,"Please enter dateRecieved in the format:"
+                                                    +"\n\"YYYY-MM-DD\"");
+                  return;
+              }
+              // Assign dateShipRegex if not null, then check value for date format
+              if(!(dateShippedTextField.getText().toString() == "")){
+                   dateShipRegex = dateShippedTextField.getText().toString();
+                   if(!(dateShipRegex.matches("\\d{4}-\\d{2}-\\d{2}"))){
+                       JOptionPane.showMessageDialog(this,"Please enter dateShipped in the format:"
+                                                    +"\n\"YYYY-MM-DD\"");
+                            return;   
+                   }
+              }
+              //regexp for dateRecd
+              String temp = shipOut_CIDComboBox.getSelectedItem().toString();
+                int soid = 0;
+                if(temp != "empty")
+                    soid = Integer.parseInt(shipOut_CIDComboBox.getSelectedItem().toString());
+                int rid = Integer.parseInt(RIDTextField.getText().toString());
+                String dr = dateRecdTextField.getText().toString();
+                String ds = dateShippedTextField.getText().toString();
+                String temp2 = shipTypeComboBox.getSelectedItem().toString();
+                String stype = "";
+                if(temp2 != "empty")
+                    stype = shipTypeComboBox.getSelectedItem().toString();
+                int eid = Integer.parseInt(receivingEIDComboBox.getSelectedItem().toString());
+                String temp3 = shipIn_CIDComboBox.getSelectedItem().toString();
+                int siid = 0;
+                if(temp3 != "empty")
+                    siid = Integer.parseInt(shipIn_CIDComboBox.getSelectedItem().toString());
+
+                RepairOrder addOrder = new RepairOrder(rid, dr, ds, stype, soid, eid, siid);
+
+                try{
+                    RODAO.updateRepairOrder(addOrder);
+                    repairOrders = RODAO.getAllRepairOrders();
+                    model = new RepairOrderTableModel(repairOrders);
+                    TableRepairOrders.setModel(model);
+                    JOptionPane.showMessageDialog(this, "Repair Order was updated");
+                }
+                catch(Exception exc){
+                    System.out.println("A Problem occured while updating a Repair Order: " + exc);
+                    JOptionPane.showMessageDialog(this,"Repair Order was not updated!");
+                }
+    }
+        
+    }//GEN-LAST:event_ROUpdateButtonActionPerformed
+    
+    private void reset(){
+       RIDTextField.setText("");
+       receivingEIDComboBox.setSelectedItem("");
+       shipIn_CIDComboBox.setSelectedItem("");
+       shipOut_CIDComboBox.setSelectedItem("");
+       shipTypeComboBox.setSelectedItem("");
+       dateShippedTextField.setText("");
+       dateRecdTextField.setText(formatter.format(date));
+       SN1ComboBox.setSelectedItem("");
+       SN1FormattedTextField.setText("");
+       SN2ComboBox.setSelectedItem("");
+       SN3ComboBox.setSelectedItem("");
+       SN4ComboBox.setSelectedItem("");
+       workEID1ComboBox.setSelectedItem("");
+       workEID2ComboBox.setSelectedItem("");
+       workEID3ComboBox.setSelectedItem("");
+       workEID4ComboBox.setSelectedItem("");
+       SN2FormattedTextField.setText("");
+       SN3FormattedTextField.setText("");
+       SN4FormattedTextField.setText("");
+    }
+
+    
 
     /**
      * @param args the command line arguments
@@ -371,7 +680,7 @@ public class RepairOrderFrame extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -400,8 +709,9 @@ public class RepairOrderFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> CIDComboBox;
     private javax.swing.JLabel CIDLabel;
+    private javax.swing.JLabel RIDLabel;
+    private javax.swing.JTextField RIDTextField;
     private javax.swing.JButton ROAddButton;
     private javax.swing.JButton RORemoveButton;
     private javax.swing.JButton ROResetButton;
@@ -426,6 +736,7 @@ public class RepairOrderFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox<String> receivingEIDComboBox;
     private javax.swing.JLabel receivingEIDLabel;
+    private javax.swing.JComboBox<String> shipIn_CIDComboBox;
     private javax.swing.JLabel shipOutTypeLabel;
     private javax.swing.JComboBox<String> shipOut_CIDComboBox;
     private javax.swing.JLabel shipOut_CIDLabel;

@@ -26,41 +26,48 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" alignment="0" min="-2" pref="721" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="NameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="WalkinLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="CIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RedShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="BlueShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GroundShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="NameTextField" alignment="0" min="-2" pref="138" max="-2" attributes="0"/>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="WalkinTextField" alignment="0" pref="55" max="32767" attributes="0"/>
-                                      <Component id="GroundShipTextField" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="jTextField3" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="BlueShipTextField" alignment="0" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="CIDTextField" alignment="0" min="-2" pref="55" max="-2" attributes="0"/>
+                                  <Component id="RedShipComboBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="BlueShipComboBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="GroundComboBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="WalkinComboBox" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="RedShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="BlueShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="GroundShipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="NameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="CIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="CIDTextField" min="-2" pref="55" max="-2" attributes="0"/>
+                                  <Component id="NameTextField" min="-2" pref="104" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="105" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="AddButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="DeleteButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="UpdateButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="ResetButton" alignment="0" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="89" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="AddButton" min="-2" pref="67" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="UpdateButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="ResetButton" alignment="1" min="-2" pref="67" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="DeleteButton" min="-2" pref="67" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
+                  <Component id="jScrollPane2" alignment="1" pref="895" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace pref="174" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -68,8 +75,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" min="-2" pref="104" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" pref="263" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -84,42 +91,162 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="RedShipLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jTextField3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="RedShipComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="BlueShipLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="BlueShipTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="BlueShipComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="GroundShipLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="GroundShipTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="GroundComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="WalkinLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="WalkinTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="WalkinComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="191" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="AddButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                       <Component id="DeleteButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="UpdateButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="ResetButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="223" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace pref="59" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Component class="javax.swing.JLabel" name="CIDLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Carrier ID:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="NameLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Name:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="RedShipLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Red Shipment:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="BlueShipLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Blue Shipment:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="GroundShipLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Ground Shipment:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="WalkinLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Walk-in:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="CIDTextField">
+    </Component>
+    <Component class="javax.swing.JButton" name="AddButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Add"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AddButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="DeleteButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Delete"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DeleteButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="UpdateButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Update"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="UpdateButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="ResetButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Reset"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ResetButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="RedShipComboBox">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="3">
+            <StringItem index="0" value=""/>
+            <StringItem index="1" value="yes"/>
+            <StringItem index="2" value="no"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="BlueShipComboBox">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="3">
+            <StringItem index="0" value=""/>
+            <StringItem index="1" value="yes"/>
+            <StringItem index="2" value="no"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="GroundComboBox">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="3">
+            <StringItem index="0" value=""/>
+            <StringItem index="1" value="yes"/>
+            <StringItem index="2" value="no"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="WalkinComboBox">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="3">
+            <StringItem index="0" value=""/>
+            <StringItem index="1" value="yes"/>
+            <StringItem index="2" value="no"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane2">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -129,13 +256,13 @@
         <Component class="javax.swing.JTable" name="CarrierTable">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="6" rowCount="4">
-                <Column editable="true" title="CID" type="java.lang.Integer"/>
+              <Table columnCount="6" rowCount="20">
+                <Column editable="true" title="Carrier ID" type="java.lang.Object"/>
                 <Column editable="true" title="Name" type="java.lang.String"/>
-                <Column editable="true" title=" Red Shipment" type="java.lang.String"/>
-                <Column editable="true" title="Blue Shipment" type="java.lang.String"/>
-                <Column editable="true" title=" Ground Shipment" type="java.lang.String"/>
-                <Column editable="true" title="Walk-in" type="java.lang.String"/>
+                <Column editable="true" title="Red Shipment Available" type="java.lang.String"/>
+                <Column editable="true" title="Blue Shipment Available" type="java.lang.String"/>
+                <Column editable="true" title="Ground Shipment Available" type="java.lang.String"/>
+                <Column editable="true" title="Walk-in Available" type="java.lang.String"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -176,70 +303,13 @@
               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="CarrierTableMouseClicked"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="CIDLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="CID:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="NameLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Name:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="RedShipLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Red Shipment:"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JTextField" name="NameTextField">
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextField3">
-    </Component>
-    <Component class="javax.swing.JLabel" name="BlueShipLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Blue Shipment:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="GroundShipLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Ground Shipment:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="WalkinLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Walk-in:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="BlueShipTextField">
-    </Component>
-    <Component class="javax.swing.JTextField" name="GroundShipTextField">
-    </Component>
-    <Component class="javax.swing.JTextField" name="WalkinTextField">
-    </Component>
-    <Component class="javax.swing.JTextField" name="CIDTextField">
-    </Component>
-    <Component class="javax.swing.JButton" name="AddButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Add"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="DeleteButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Delete"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="UpdateButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Update"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="ResetButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Reset"/>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>
